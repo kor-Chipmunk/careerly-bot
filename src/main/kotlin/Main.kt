@@ -3,7 +3,7 @@ import fuel.httpGet
 import fuel.httpPost
 
 suspend fun main() {
-    val rawResponse = "https://news.publy.co/api/public/comments/popular/best?limit=10".httpGet().body
+    val rawResponse = REQUEST_URL.httpGet().body
     val response = Gson().fromJson(rawResponse, Response::class.java)
 
     val embeds = response.data.mapIndexed { _, it ->
@@ -109,3 +109,5 @@ data class Author(
 data class Image(val url: String?)
 
 val ENV_KEY_DISCORD_WEBHOOKS = arrayOf("DISCORD_WEBHOOK")
+
+val REQUEST_URL = "https://news.publy.co/api/public/comments/popular/best?limit=10"
