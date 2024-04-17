@@ -3,11 +3,13 @@ import fuel.httpGet
 import fuel.httpPost
 import kotlinx.coroutines.runBlocking
 
-suspend fun main() {
+suspend fun getResponse(): Response {
     val rawResponse = REQUEST_URL.httpGet().body
-    val response = Gson().fromJson(rawResponse, Response::class.java)
+    return Gson().fromJson(rawResponse, Response::class.java)
+}
 
-    val embeds = response.data.comments.mapIndexed { _, it ->
+fun mapToEmbeds(response: Response): List<Embed> {
+    return response.data.comments.mapIndexed { _, it ->
         val userProfile = it.userProfile
 
         Embed(
@@ -22,7 +24,21 @@ suspend fun main() {
             thumbnail = Image(url = it.photoUrl),
             description = it.description.substring(0, minOf(it.description.length, 200)) + "..."
         )
-    }.toList()
+    }
+}
+
+suspend fun sendWebHooks(webHookData: WebHookData) {
+    for (webhook in ENV_KEY_DISCORD_WEBHOOKS) {
+        System.getenv(webhook).httpPost(
+            headers = mapOf("Content-Type" to "application/json"),
+            body = Gson().toJson(webHookData)
+        )
+    }
+}
+
+suspend fun main() {
+    val response = getResponse()
+    val embeds = mapToEmbeds(response)
 
     embeds.chunked(MAX_EMBED_SIZE) { chunk ->
         val isFirstChunk = chunk == embeds.chunked(MAX_EMBED_SIZE).first()
@@ -41,13 +57,8 @@ suspend fun main() {
             }
         )
 
-        for (webhook in ENV_KEY_DISCORD_WEBHOOKS) {
-            runBlocking {
-                System.getenv(webhook).httpPost(
-                    headers = mapOf("Content-Type" to "application/json"),
-                    body = Gson().toJson(webHookData)
-                )
-            }
+        runBlocking {
+            sendWebHooks(webHookData)
         }
     }
 
