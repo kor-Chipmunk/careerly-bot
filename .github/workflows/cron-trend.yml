@@ -1,0 +1,19 @@
+name: Crawler-Trend
+
+on:
+  schedule:
+    - cron : '0 0 1 * *'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: trend
+
+      - name: Run
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+        run: ./gradlew run

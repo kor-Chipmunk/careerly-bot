@@ -1,4 +1,4 @@
-name: Crawler-Android
+name: Crawler-Weekly
 
 on:
   schedule:
