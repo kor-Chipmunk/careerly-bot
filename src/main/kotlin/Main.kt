@@ -32,7 +32,7 @@ suspend fun main() {
             allowed_mentions = AllowedMentions(
                 parse = listOf("users", "roles")
             ),
-            embeds = embeds,
+            embeds = chunk,
             content = "**< 주간 인기 TOP 10 >**"
         )
 
