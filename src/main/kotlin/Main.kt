@@ -30,7 +30,7 @@ fun mapToEmbeds(response: Response): List<Embed> {
 
 suspend fun sendWebHooks(webHookData: WebHookData) {
     for (webhook in ENV_KEY_DISCORD_WEBHOOKS) {
-        "https://discord.com/api/webhooks/1229946092217569353/x-NIHZLOLyl-g8v2zNZDYjeeOl_MAnhwUl5QWKS7bBgsK8mzgz_Hn6lFPSVRgpABrQUL".httpPost(
+        System.getenv(webhook).httpPost(
             headers = mapOf("Content-Type" to "application/json"),
             body = Gson().toJson(webHookData)
         )
