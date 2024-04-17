@@ -36,7 +36,7 @@ suspend fun sendWebHooks(webHookData: WebHookData) {
     }
 }
 
-suspend fun main() {
+fun main() = runBlocking {
     val response = getResponse()
     val embeds = mapToEmbeds(response)
 
@@ -61,8 +61,6 @@ suspend fun main() {
             sendWebHooks(webHookData)
         }
     }
-
-    System.exit(0)
 }
 
 data class Response(
