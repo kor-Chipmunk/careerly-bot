@@ -25,26 +25,22 @@ suspend fun main() {
         )
     }.toList()
 
-    embeds.chunked(MAX_EMBED_SIZE) { chunk -> {
-        val webHookData = WebHookData(
-            username = "커리어리 봇",
-            avatar_url = "https://careerly.co.kr/favicon.png",
-            allowed_mentions = AllowedMentions(
-                parse = listOf("users", "roles")
-            ),
-            embeds = chunk,
-            content = "**< 주간 인기 TOP 10 >**"
-        )
+    val webHookData = WebHookData(
+        username = "커리어리 봇",
+        avatar_url = "https://careerly.co.kr/favicon.png",
+        allowed_mentions = AllowedMentions(
+            parse = listOf("users", "roles")
+        ),
+        embeds = embeds,
+        content = "**< 주간 인기 TOP 10 >**"
+    )
 
-        for (webhook in ENV_KEY_DISCORD_WEBHOOKS) {
-            runBlocking {
-                System.getenv(webhook).httpPost(
-                    headers = mapOf("Content-Type" to "application/json"),
-                    body = Gson().toJson(webHookData)
-                )
-            }
-        }
-    }}
+    for (webhook in ENV_KEY_DISCORD_WEBHOOKS) {
+        System.getenv(webhook).httpPost(
+            headers = mapOf("Content-Type" to "application/json"),
+            body = Gson().toJson(webHookData)
+        )
+    }
 
     System.exit(0)
 }
@@ -116,7 +112,5 @@ data class Image(val url: String?)
 val ENV_KEY_DISCORD_WEBHOOKS = arrayOf("DISCORD_WEBHOOK")
 
 val REQUEST_URL = "https://news.publy.co/api/public/comments/popular/best?limit=10"
-
-val MAX_EMBED_SIZE = 10
 
 val GREEN_COLOR = "38912"
