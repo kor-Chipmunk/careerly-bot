@@ -3,9 +3,6 @@ name: Crawler-Trend
 on:
   schedule:
     - cron : '0 0 1 * *'
-  push:
-    branches:
-      - main
 
 jobs:
   build:
