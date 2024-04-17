@@ -15,6 +15,8 @@ dependencies {
     implementation("com.google.code.gson:gson:2.10.1")
     implementation("com.github.kittinunf.fuel:fuel:3.0.0-alpha1")
 
+    implementation("com.prof18.rssparser:rssparser:6.0.7")
+
     testImplementation(kotlin("test"))
 
     testImplementation(platform("org.junit:junit-bom:5.10.2"))

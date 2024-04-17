@@ -1,29 +1,18 @@
 import com.google.gson.Gson
-import fuel.httpGet
+import com.prof18.rssparser.RssParser
+import com.prof18.rssparser.model.RssChannel
 import fuel.httpPost
 import kotlinx.coroutines.runBlocking
 
-suspend fun getResponse(): Response {
-    val rawResponse = REQUEST_URL.httpGet().body
-    return Gson().fromJson(rawResponse, Response::class.java)
-}
 
-fun mapToEmbeds(response: Response): List<Embed> {
-    return response.data.map {
-        val comment = it.comments.first()
-        val userProfile = comment.userProfile
-
+fun mapToEmbeds(rssChannel: RssChannel): List<Embed> {
+    return rssChannel.items.map {
         Embed(
             color = GREEN_COLOR,
-            author = Author(
-                name = "${userProfile.name} - ${userProfile.title}",
-                url = userProfile.profileUrl,
-                icon_url = userProfile.small_image_url,
-            ),
-            title = comment.title,
-            url = it.postUrl,
-            thumbnail = Image(url = comment.photoUrl),
-            description = comment.truncatedDescription,
+            title = it.title ?: "",
+            url = it.link ?: "",
+            thumbnail = Image(url = it.image),
+            description = it.content ?: ""
         )
     }
 }
@@ -38,8 +27,10 @@ suspend fun sendWebHooks(webHookData: WebHookData) {
 }
 
 fun main() = runBlocking {
-    val response = getResponse()
-    val embeds = mapToEmbeds(response)
+    val rssParser = RssParser()
+    val rssChannel = rssParser.getRssChannel(REQUEST_URL)
+
+    val embeds = mapToEmbeds(rssChannel)
     val webHookData = WebHookData(
         username = "커리어리 봇",
         avatar_url = "https://careerly.co.kr/favicon.png",
@@ -47,50 +38,11 @@ fun main() = runBlocking {
             parse = listOf("users", "roles")
         ),
         embeds = embeds,
-        content = "**< 주간 인기 TOP 10 >**"
+        content = ":bell: 띵동! **커리어리 일간 피드**가 도착했습니다!"
     )
     sendWebHooks(webHookData)
 }
 
-data class Response(
-    val statusCode: Int,
-    val message: String,
-    val data: List<Data>,
-)
-
-data class Data(
-    val postId: Int,
-    val comments: List<Comment>,
-    val payload: Payload,
-) {
-    val postUrl: String
-        get() = "https://careerly.co.kr/comments/$postId"
-}
-
-data class Comment(
-    val postId: Int,
-    val title: String,
-    val photoUrl: String,
-    val userProfile: UserProfile,
-    val description: String,
-) {
-    val truncatedDescription: String
-        get() = description.substring(0, minOf(description.length, 200)) + "..."
-}
-
-data class UserProfile(
-    val id: Int,
-    val name: String,
-    val title: String,
-    val small_image_url: String,
-) {
-    val profileUrl: String
-        get() = "https://careerly.co.kr/profiles/$id"
-}
-
-data class Payload(
-    val postViewCount: Int,
-)
 
 data class WebHookData(
     val username: String,
@@ -104,23 +56,16 @@ data class AllowedMentions(val parse: List<String>)
 
 data class Embed(
     val color: String,
-    val author: Author,
     val title: String,
     val url: String,
     val thumbnail: Image,
     val description: String
 )
 
-data class Author(
-    val name: String,
-    val url: String,
-    val icon_url: String
-)
-
 data class Image(val url: String?)
 
 val ENV_KEY_DISCORD_WEBHOOKS = arrayOf("DISCORD_WEBHOOK")
 
-val REQUEST_URL = "https://news.publy.co/api/public/comments/popular/best?limit=10"
+val REQUEST_URL = "https://careerly.co.kr/rss/dev"
 
 val GREEN_COLOR = "38912"
