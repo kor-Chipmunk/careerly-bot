@@ -1,6 +1,7 @@
 import com.google.gson.Gson
 import fuel.httpGet
 import fuel.httpPost
+import kotlinx.coroutines.runBlocking
 
 suspend fun getResponse(): Response {
     val rawResponse = REQUEST_URL.httpGet().body
@@ -29,14 +30,14 @@ fun mapToEmbeds(response: Response): List<Embed> {
 
 suspend fun sendWebHooks(webHookData: WebHookData) {
     for (webhook in ENV_KEY_DISCORD_WEBHOOKS) {
-        System.getenv(webhook).httpPost(
+        "https://discord.com/api/webhooks/1229946092217569353/x-NIHZLOLyl-g8v2zNZDYjeeOl_MAnhwUl5QWKS7bBgsK8mzgz_Hn6lFPSVRgpABrQUL".httpPost(
             headers = mapOf("Content-Type" to "application/json"),
             body = Gson().toJson(webHookData)
         )
     }
 }
 
-suspend fun main() {
+fun main() = runBlocking {
     val response = getResponse()
     val embeds = mapToEmbeds(response)
     val webHookData = WebHookData(
@@ -49,7 +50,6 @@ suspend fun main() {
         content = "**< 주간 인기 TOP 10 >**"
     )
     sendWebHooks(webHookData)
-    System.exit(0)
 }
 
 data class Response(
