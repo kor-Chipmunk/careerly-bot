@@ -1,0 +1,19 @@
+name: Crawler-Day
+
+on:
+  schedule:
+    - cron : '0 0 * * *'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: day
+
+      - name: Run
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+        run: ./gradlew run
