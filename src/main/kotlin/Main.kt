@@ -2,11 +2,13 @@ import com.google.gson.Gson
 import fuel.httpGet
 import fuel.httpPost
 
-suspend fun main() {
+suspend fun getResponse(): Response {
     val rawResponse = REQUEST_URL.httpGet().body
-    val response = Gson().fromJson(rawResponse, Response::class.java)
+    return Gson().fromJson(rawResponse, Response::class.java)
+}
 
-    val embeds = response.data.mapIndexed { _, it ->
+fun mapToEmbeds(response: Response): List<Embed> {
+    return response.data.map {
         val comment = it.comments.first()
         val userProfile = comment.userProfile
 
@@ -22,8 +24,21 @@ suspend fun main() {
             thumbnail = Image(url = comment.photoUrl),
             description = comment.description.substring(0, minOf(comment.description.length, 200)) + "..."
         )
-    }.toList()
+    }
+}
 
+suspend fun sendWebHooks(webHookData: WebHookData) {
+    for (webhook in ENV_KEY_DISCORD_WEBHOOKS) {
+        System.getenv(webhook).httpPost(
+            headers = mapOf("Content-Type" to "application/json"),
+            body = Gson().toJson(webHookData)
+        )
+    }
+}
+
+suspend fun main() {
+    val response = getResponse()
+    val embeds = mapToEmbeds(response)
     val webHookData = WebHookData(
         username = "커리어리 봇",
         avatar_url = "https://careerly.co.kr/favicon.png",
@@ -33,14 +48,7 @@ suspend fun main() {
         embeds = embeds,
         content = "**< 주간 인기 TOP 10 >**"
     )
-
-    for (webhook in ENV_KEY_DISCORD_WEBHOOKS) {
-        System.getenv(webhook).httpPost(
-            headers = mapOf("Content-Type" to "application/json"),
-            body = Gson().toJson(webHookData)
-        )
-    }
-
+    sendWebHooks(webHookData)
     System.exit(0)
 }
 
