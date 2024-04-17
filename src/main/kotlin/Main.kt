@@ -15,7 +15,7 @@ suspend fun main() {
             author = Author(
                 name = "${userProfile.name} - ${userProfile.headline}",
                 url = userProfile.profileUrl,
-                icon_url = userProfile.imageUrl,
+                icon_url = userProfile.smallImageUrl,
             ),
             title = it.title,
             url = it.postUrl,
@@ -85,11 +85,10 @@ data class UserProfile(
 ) {
     val profileUrl: String
         get() = "https://careerly.co.kr/profiles/$id"
-}
 
-data class Payload(
-    val postViewCount: Int,
-)
+    val smallImageUrl: String
+        get() = imageUrl.replace("publy-cdn.s3.ap-northeast-2.amazonaws.com", "publy.imgix.net")
+}
 
 data class WebHookData(
     val username: String,
