@@ -1,44 +1,54 @@
 import com.google.gson.Gson
 import fuel.httpGet
 import fuel.httpPost
+import kotlinx.coroutines.runBlocking
 
 suspend fun main() {
     val rawResponse = REQUEST_URL.httpGet().body
     val response = Gson().fromJson(rawResponse, Response::class.java)
 
-    val embeds = response.data.mapIndexed { _, it ->
-        val comment = it.comments.first()
-        val userProfile = comment.userProfile
+    val embeds = response.data.comments.mapIndexed { _, it ->
+        val userProfile = it.userProfile
 
         Embed(
-            color = "38912",
+            color = GREEN_COLOR,
             author = Author(
-                name = "${userProfile.name} - ${userProfile.title}",
+                name = "${userProfile.name} - ${userProfile.headline}",
                 url = userProfile.profileUrl,
-                icon_url = userProfile.small_image_url,
+                icon_url = userProfile.imageUrl,
             ),
-            title = comment.title,
+            title = it.title,
             url = it.postUrl,
-            thumbnail = Image(url = comment.photoUrl),
-            description = comment.description.substring(0, minOf(comment.description.length, 200)) + "..."
+            thumbnail = Image(url = it.photoUrl),
+            description = it.description.substring(0, minOf(it.description.length, 200)) + "..."
         )
     }.toList()
 
-    val webHookData = WebHookData(
-        username = "커리어리 봇",
-        avatar_url = "https://careerly.co.kr/favicon.png",
-        allowed_mentions = AllowedMentions(
-            parse = listOf("users", "roles")
-        ),
-        embeds = embeds,
-        content = "**< 주간 인기 TOP 10 >**"
-    )
+    embeds.chunked(MAX_EMBED_SIZE) { chunk ->
+        val isFirstChunk = chunk == embeds.chunked(MAX_EMBED_SIZE).first()
 
-    for (webhook in ENV_KEY_DISCORD_WEBHOOKS) {
-        System.getenv(webhook).httpPost(
-            headers = mapOf("Content-Type" to "application/json"),
-            body = Gson().toJson(webHookData)
+        val webHookData = WebHookData(
+            username = "커리어리 봇",
+            avatar_url = "https://careerly.co.kr/favicon.png",
+            allowed_mentions = AllowedMentions(
+                parse = listOf("users", "roles")
+            ),
+            embeds = chunk,
+            content = if (isFirstChunk) {
+                "**< 커리어리 트렌드 >**\n지난 30일 동안 각 분야에서 반응이 좋았던 게시물을 만나보세요."
+            } else {
+                ""
+            }
         )
+
+        for (webhook in ENV_KEY_DISCORD_WEBHOOKS) {
+            runBlocking {
+                System.getenv(webhook).httpPost(
+                    headers = mapOf("Content-Type" to "application/json"),
+                    body = Gson().toJson(webHookData)
+                )
+            }
+        }
     }
 
     System.exit(0)
@@ -47,17 +57,14 @@ suspend fun main() {
 data class Response(
     val statusCode: Int,
     val message: String,
-    val data: List<Data>,
+    val data: Data,
 )
 
 data class Data(
-    val postId: Int,
+    val interestId: Int,
+    val publishDate: String,
     val comments: List<Comment>,
-    val payload: Payload,
-) {
-    val postUrl: String
-        get() = "https://careerly.co.kr/comments/$postId"
-}
+)
 
 data class Comment(
     val postId: Int,
@@ -65,13 +72,16 @@ data class Comment(
     val photoUrl: String,
     val userProfile: UserProfile,
     val description: String,
-)
+) {
+    val postUrl: String
+        get() = "https://careerly.co.kr/comments/$postId"
+}
 
 data class UserProfile(
     val id: Int,
     val name: String,
-    val title: String,
-    val small_image_url: String,
+    val headline: String,
+    val imageUrl: String,
 ) {
     val profileUrl: String
         get() = "https://careerly.co.kr/profiles/$id"
@@ -110,4 +120,8 @@ data class Image(val url: String?)
 
 val ENV_KEY_DISCORD_WEBHOOKS = arrayOf("DISCORD_WEBHOOK")
 
-val REQUEST_URL = "https://news.publy.co/api/public/comments/popular/best?limit=10"
+val REQUEST_URL = "https://news.publy.co/api/public/comments/popular/trend?interestId=9"
+
+val MAX_EMBED_SIZE = 10
+
+val GREEN_COLOR = "38912"
