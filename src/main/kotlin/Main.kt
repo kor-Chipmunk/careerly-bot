@@ -22,7 +22,7 @@ fun mapToEmbeds(response: Response): List<Embed> {
             title = comment.title,
             url = it.postUrl,
             thumbnail = Image(url = comment.photoUrl),
-            description = comment.description.substring(0, minOf(comment.description.length, 200)) + "..."
+            description = comment.truncatedDescription,
         )
     }
 }
@@ -73,7 +73,10 @@ data class Comment(
     val photoUrl: String,
     val userProfile: UserProfile,
     val description: String,
-)
+) {
+    val truncatedDescription: String
+        get() = description.substring(0, minOf(description.length, 200)) + "..."
+}
 
 data class UserProfile(
     val id: Int,
