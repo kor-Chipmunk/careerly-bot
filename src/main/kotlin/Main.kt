@@ -1,7 +1,6 @@
 import com.google.gson.Gson
 import fuel.httpGet
 import fuel.httpPost
-import kotlinx.coroutines.runBlocking
 
 suspend fun main() {
     val rawResponse = REQUEST_URL.httpGet().body
