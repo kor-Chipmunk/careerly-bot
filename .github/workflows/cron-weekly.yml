@@ -3,7 +3,7 @@ name: Crawler-Weekly
 on:
   schedule:
     - cron : '0 0 * * 1'
-
+  workflow_dispatch:
 jobs:
   build:
     runs-on: ubuntu-latest
