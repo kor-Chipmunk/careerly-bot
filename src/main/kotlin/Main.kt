@@ -1,6 +1,7 @@
 import com.google.gson.Gson
 import com.prof18.rssparser.RssParser
 import com.prof18.rssparser.model.RssChannel
+import fuel.httpGet
 import fuel.httpPost
 import kotlinx.coroutines.runBlocking
 
@@ -28,7 +29,8 @@ suspend fun sendWebHooks(webHookData: WebHookData) {
 
 fun main() = runBlocking {
     val rssParser = RssParser()
-    val rssChannel = rssParser.getRssChannel(REQUEST_URL)
+    val rss = REQUEST_URL.httpGet().body.replace("\u001C", "")
+    val rssChannel = rssParser.parse(rss)
 
     val embeds = mapToEmbeds(rssChannel)
     val webHookData = WebHookData(
