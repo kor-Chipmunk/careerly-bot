@@ -36,7 +36,7 @@ suspend fun sendWebHooks(webHookData: WebHookData) {
     }
 }
 
-fun main() = runBlocking {
+fun main(): Unit = runBlocking {
     val response = getResponse()
     val embeds = mapToEmbeds(response)
 
