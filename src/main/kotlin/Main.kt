@@ -29,7 +29,7 @@ suspend fun sendWebHooks(webHookData: WebHookData) {
 
 fun main() = runBlocking {
     val rssParser = RssParser()
-    val rss = REQUEST_URL.httpGet().body.sanitizeInvalidXMLUnicodes()
+    val rss = REQUEST_URL.httpGet().body.sanitizeInvalidXMLUnicode()
     val rssChannel = rssParser.parse(rss)
 
     val embeds = mapToEmbeds(rssChannel)
@@ -72,7 +72,7 @@ val REQUEST_URL = "https://careerly.co.kr/rss/dev"
 
 val GREEN_COLOR = "38912"
 
-fun String.sanitizeInvalidXMLUnicodes(): String {
+fun String.sanitizeInvalidXMLUnicode(): String {
     val SANITIZE_REGEX = Regex("[^\\x09\\x0A\\x0D\\x20-\\uD7FF\\uE000-\\uFFFD\\u10000-\\u10FFFF]")
     return this.replace(SANITIZE_REGEX,"");
 }
