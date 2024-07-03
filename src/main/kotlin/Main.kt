@@ -121,6 +121,8 @@ data class Image(val url: String?)
 
 val ENV_KEY_DISCORD_WEBHOOKS = arrayOf("DISCORD_WEBHOOK")
 
-val REQUEST_URL = "https://news.publy.co/api/public/comments/popular/best?limit=10"
+val REQUEST_HOST = System.getenv("REQUEST_HOST")
+
+val REQUEST_URL = "$REQUEST_HOST/api/public/comments/popular/best?limit=10"
 
 val GREEN_COLOR = "38912"
