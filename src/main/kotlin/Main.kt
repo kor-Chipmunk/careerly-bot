@@ -19,7 +19,7 @@ fun mapToEmbeds(response: Response): List<Embed> {
                 url = userProfile.profileUrl,
                 icon_url = userProfile.smallImageUrl,
             ),
-            title = it.title,
+            title = it.title ?: "",
             url = it.postUrl,
             thumbnail = Image(url = it.photoUrl),
             description = it.description.substring(0, minOf(it.description.length, 200)) + "..."
@@ -128,7 +128,9 @@ data class Image(val url: String?)
 
 val ENV_KEY_DISCORD_WEBHOOKS = arrayOf("DISCORD_WEBHOOK")
 
-val REQUEST_URL = "https://news.publy.co/api/public/comments/popular/trend?interestId=9"
+val REQUEST_HOST = System.getenv("REQUEST_HOST")
+
+val REQUEST_URL = "$REQUEST_HOST/api/public/comments/popular/trend?interestId=9"
 
 val MAX_EMBED_SIZE = 10
 
