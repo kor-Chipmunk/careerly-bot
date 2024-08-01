@@ -16,4 +16,5 @@ jobs:
       - name: Run
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+          REQUEST_URL: ${{ secrets.REQUEST_URL }}
         run: ./gradlew run
