@@ -2,7 +2,7 @@ name: Crawler-Day
 
 on:
   schedule:
-    - cron : '57 23 * * 1-5'
+    - cron : '57 23 * * 0-4'
   workflow_dispatch:
 jobs:
   build:
